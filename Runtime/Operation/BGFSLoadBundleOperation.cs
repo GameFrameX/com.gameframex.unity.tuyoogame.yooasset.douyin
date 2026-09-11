@@ -1,12 +1,15 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
+using UnityEngine;
 using UnityEngine.Networking;
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
     [UnityEngine.Scripting.Preserve]
-    public class BGFSLoadBundleOperation : FSLoadBundleOperation
+    internal class BGFSLoadBundleOperation : FSLoadBundleOperation
     {
+        [UnityEngine.Scripting.Preserve]
         private enum ESteps
         {
             None,
@@ -44,7 +47,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             {
                 if (_webRequest == null)
                 {
-                    string mainURL = _fileSystem.RemoteServices.GetRemoteMainURL(_bundle.FileName);
+                    var mainURL = _fileSystem.RemoteServices.GetRemoteMainURL(_bundle.FileName, null);
                     _webRequest = UnityWebRequestAssetBundle.GetAssetBundle(mainURL);
                     _webRequest.SendWebRequest();
                 }
@@ -79,7 +82,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
                 _steps = ESteps.Done;
                 Status = EOperationStatus.Failed;
                 Error = "WebGL platform not support sync load method !";
-                UnityEngine.Debug.LogError(Error);
+                Debug.LogError(Error);
             }
         }
 
@@ -102,15 +105,15 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
                 return true;
             }
 #else
-        if (_webRequest.isNetworkError || _webRequest.isHttpError)
-        {
-            Error = _webRequest.error;
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+            if (_webRequest.isNetworkError || _webRequest.isHttpError)
+            {
+                Error = _webRequest.error;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
 #endif
         }
     }

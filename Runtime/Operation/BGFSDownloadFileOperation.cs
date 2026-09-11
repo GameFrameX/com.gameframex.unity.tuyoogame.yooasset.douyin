@@ -1,17 +1,19 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
 using UnityEngine;
 using UnityEngine.Networking;
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
+    [UnityEngine.Scripting.Preserve]
     internal class BGFSDownloadFileOperation : DefaultDownloadFileOperation
     {
         private ByteGameFileSystem _fileSystem;
         private ESteps _steps = ESteps.None;
 
         [UnityEngine.Scripting.Preserve]
-        public BGFSDownloadFileOperation(ByteGameFileSystem fileSystem, PackageBundle bundle, DownloadParam param) : base(bundle, param)
+        internal BGFSDownloadFileOperation(ByteGameFileSystem fileSystem, PackageBundle bundle, DownloadParam param) : base(bundle, param)
         {
             _fileSystem = fileSystem;
         }

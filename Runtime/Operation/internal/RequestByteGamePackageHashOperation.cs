@@ -1,7 +1,8 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
     [UnityEngine.Scripting.Preserve]
     internal class RequestByteGamePackageHashOperation : AsyncOperationBase
@@ -26,6 +27,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         /// </summary>
         public string PackageHash { private set; get; }
 
+
         [UnityEngine.Scripting.Preserve]
         public RequestByteGamePackageHashOperation(ByteGameFileSystem fileSystem, string packageVersion, int timeout)
         {
@@ -49,46 +51,44 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
                 return;
             }
 
-            if (_steps != ESteps.RequestPackageHash)
+            if (_steps == ESteps.RequestPackageHash)
             {
-                return;
-            }
-
-            if (_webTextRequestOp == null)
-            {
-                string fileName = YooAssetSettingsData.GetPackageHashFileName(_fileSystem.PackageName, _packageVersion);
-                string url = GetRequestURL(fileName);
-                _webTextRequestOp = new UnityWebTextRequestOperation(url, _timeout);
-                OperationSystem.StartOperation(_fileSystem.PackageName, _webTextRequestOp);
-            }
-
-            Progress = _webTextRequestOp.Progress;
-            if (_webTextRequestOp.IsDone == false)
-            {
-                return;
-            }
-
-            if (_webTextRequestOp.Status == EOperationStatus.Succeed)
-            {
-                PackageHash = _webTextRequestOp.Result;
-                if (string.IsNullOrEmpty(PackageHash))
+                if (_webTextRequestOp == null)
                 {
-                    _steps = ESteps.Done;
-                    Status = EOperationStatus.Failed;
-                    Error = $"Wechat package hash file content is empty !";
+                    var fileName = YooAssetSettingsData.GetPackageHashFileName(_fileSystem.PackageName, _packageVersion);
+                    var url = GetRequestURL(fileName);
+                    _webTextRequestOp = new UnityWebTextRequestOperation(url, _timeout);
+                    OperationSystem.StartOperation(_fileSystem.PackageName, _webTextRequestOp);
+                }
+
+                Progress = _webTextRequestOp.Progress;
+                if (_webTextRequestOp.IsDone == false)
+                {
+                    return;
+                }
+
+                if (_webTextRequestOp.Status == EOperationStatus.Succeed)
+                {
+                    PackageHash = _webTextRequestOp.Result;
+                    if (string.IsNullOrEmpty(PackageHash))
+                    {
+                        _steps = ESteps.Done;
+                        Status = EOperationStatus.Failed;
+                        Error = $"Wechat package hash file content is empty !";
+                    }
+                    else
+                    {
+                        _steps = ESteps.Done;
+                        Status = EOperationStatus.Succeed;
+                    }
                 }
                 else
                 {
                     _steps = ESteps.Done;
-                    Status = EOperationStatus.Succeed;
+                    Status = EOperationStatus.Failed;
+                    Error = _webTextRequestOp.Error;
+                    WebRequestCounter.RecordRequestFailed(_fileSystem.PackageName, nameof(RequestByteGamePackageHashOperation));
                 }
-            }
-            else
-            {
-                _steps = ESteps.Done;
-                Status = EOperationStatus.Failed;
-                Error = _webTextRequestOp.Error;
-                WebRequestCounter.RecordRequestFailed(_fileSystem.PackageName, nameof(RequestByteGamePackageHashOperation));
             }
         }
 
@@ -98,11 +98,11 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             // 轮流返回请求地址
             if (_requestCount % 2 == 0)
             {
-                return _fileSystem.RemoteServices.GetRemoteMainURL(fileName);
+                return _fileSystem.RemoteServices.GetRemoteMainURL(fileName, _packageVersion);
             }
             else
             {
-                return _fileSystem.RemoteServices.GetRemoteFallbackURL(fileName);
+                return _fileSystem.RemoteServices.GetRemoteFallbackURL(fileName, _packageVersion);
             }
         }
     }

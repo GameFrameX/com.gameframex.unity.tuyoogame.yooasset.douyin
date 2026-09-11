@@ -1,7 +1,8 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
     [UnityEngine.Scripting.Preserve]
     internal class BGFSRequestPackageVersionOperation : FSRequestPackageVersionOperation
@@ -18,6 +19,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         private readonly int _timeout;
         private RequestByteGamePackageVersionOperation _requestWebPackageVersionOp;
         private ESteps _steps = ESteps.None;
+
 
         [UnityEngine.Scripting.Preserve]
         internal BGFSRequestPackageVersionOperation(ByteGameFileSystem fileSystem, int timeout)
@@ -40,34 +42,32 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
                 return;
             }
 
-            if (_steps != ESteps.RequestPackageVersion)
+            if (_steps == ESteps.RequestPackageVersion)
             {
-                return;
-            }
+                if (_requestWebPackageVersionOp == null)
+                {
+                    _requestWebPackageVersionOp = new RequestByteGamePackageVersionOperation(_fileSystem, _timeout);
+                    OperationSystem.StartOperation(_fileSystem.PackageName, _requestWebPackageVersionOp);
+                }
 
-            if (_requestWebPackageVersionOp == null)
-            {
-                _requestWebPackageVersionOp = new RequestByteGamePackageVersionOperation(_fileSystem, _timeout);
-                OperationSystem.StartOperation(_fileSystem.PackageName, _requestWebPackageVersionOp);
-            }
+                Progress = _requestWebPackageVersionOp.Progress;
+                if (_requestWebPackageVersionOp.IsDone == false)
+                {
+                    return;
+                }
 
-            Progress = _requestWebPackageVersionOp.Progress;
-            if (_requestWebPackageVersionOp.IsDone == false)
-            {
-                return;
-            }
-
-            if (_requestWebPackageVersionOp.Status == EOperationStatus.Succeed)
-            {
-                _steps = ESteps.Done;
-                PackageVersion = _requestWebPackageVersionOp.PackageVersion;
-                Status = EOperationStatus.Succeed;
-            }
-            else
-            {
-                _steps = ESteps.Done;
-                Status = EOperationStatus.Failed;
-                Error = _requestWebPackageVersionOp.Error;
+                if (_requestWebPackageVersionOp.Status == EOperationStatus.Succeed)
+                {
+                    _steps = ESteps.Done;
+                    PackageVersion = _requestWebPackageVersionOp.PackageVersion;
+                    Status = EOperationStatus.Succeed;
+                }
+                else
+                {
+                    _steps = ESteps.Done;
+                    Status = EOperationStatus.Failed;
+                    Error = _requestWebPackageVersionOp.Error;
+                }
             }
         }
     }

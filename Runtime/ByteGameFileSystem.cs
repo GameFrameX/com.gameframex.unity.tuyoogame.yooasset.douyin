@@ -1,28 +1,28 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
 using System.Collections.Generic;
-using StarkSDKSpace;
 using UnityEngine;
 using UnityEngine.Scripting;
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
-    [UnityEngine.Scripting.Preserve]
+    [Preserve]
     public static class ByteGameFileSystemCreater
     {
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public static FileSystemParameters CreateByteGameFileSystemParameters(IRemoteServices remoteServices = null)
         {
-            string fileSystemClass = typeof(ByteGameFileSystem).FullName;
+            var fileSystemClass = typeof(ByteGameFileSystem).FullName;
             var fileSystemParams = new FileSystemParameters(fileSystemClass, null);
             fileSystemParams.AddParameter(FileSystemParametersDefine.REMOTE_SERVICES, remoteServices);
             return fileSystemParams;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public static FileSystemParameters CreateByteGameFileSystemParameters(string buildinPackRoot)
         {
-            string fileSystemClass = typeof(ByteGameFileSystem).FullName;
+            var fileSystemClass = typeof(ByteGameFileSystem).FullName;
             IRemoteServices remoteServices = new ByteGameFileSystem.WebRemoteServices(buildinPackRoot);
             var fileSystemParams = new FileSystemParameters(fileSystemClass, null);
             fileSystemParams.AddParameter(FileSystemParametersDefine.REMOTE_SERVICES, remoteServices);
@@ -34,48 +34,49 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
     /// 抖音小游戏文件系统
     /// 参考：https://developer.open-douyin.com/docs/resource/zh-CN/mini-game/develop/guide/know
     /// </summary>
-    public class ByteGameFileSystem : IFileSystem
+    [UnityEngine.Scripting.Preserve]
+    internal class ByteGameFileSystem : IFileSystem
     {
-        [UnityEngine.Scripting.Preserve]
+        [Preserve]
         public sealed class WebRemoteServices : IRemoteServices
         {
             private readonly string _webPackageRoot;
             protected readonly Dictionary<string, string> _mapping = new Dictionary<string, string>(10000);
 
-            [Preserve]
+            [UnityEngine.Scripting.Preserve]
             public WebRemoteServices(string buildinPackRoot)
             {
                 _webPackageRoot = buildinPackRoot;
             }
 
-            [Preserve]
-            string IRemoteServices.GetRemoteMainURL(string fileName)
-            {
-                return GetFileLoadURL(fileName);
-            }
-
-            [Preserve]
-            string IRemoteServices.GetRemoteFallbackURL(string fileName)
-            {
-                return GetFileLoadURL(fileName);
-            }
-
-            [Preserve]
+            [UnityEngine.Scripting.Preserve]
             private string GetFileLoadURL(string fileName)
             {
-                if (_mapping.TryGetValue(fileName, out string url) == false)
+                if (_mapping.TryGetValue(fileName, out var url) == false)
                 {
-                    string filePath = PathUtility.Combine(_webPackageRoot, fileName);
+                    var filePath = PathUtility.Combine(_webPackageRoot, fileName);
                     url = DownloadSystemHelper.ConvertToWWWPath(filePath);
                     _mapping.Add(fileName, url);
                 }
 
                 return url;
             }
+
+            [UnityEngine.Scripting.Preserve]
+            public string GetRemoteMainURL(string fileName, string packageVersion)
+            {
+                return GetFileLoadURL(fileName);
+            }
+
+            [UnityEngine.Scripting.Preserve]
+            public string GetRemoteFallbackURL(string fileName, string packageVersion)
+            {
+                return GetFileLoadURL(fileName);
+            }
         }
 
         private readonly Dictionary<string, string> _cacheFilePaths = new Dictionary<string, string>(10000);
-        private StarkFileSystemManager _fileSystemManager;
+        private StarkSDKSpace.StarkFileSystemManager _fileSystemManager;
 
         /// <summary>
         /// 包裹名称
@@ -113,7 +114,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             PackageName = string.Empty;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual FSInitializeFileSystemOperation InitializeFileSystemAsync()
         {
             var operation = new BGFSInitializeOperation(this);
@@ -121,7 +122,39 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
+        public FSRequestPackageVersionOperation LoadLocalPackageVersionAsync(bool appendTimeTicks, int timeout)
+        {
+            var operation = new BGFSRequestPackageVersionOperation(this, timeout);
+            OperationSystem.StartOperation(PackageName, operation);
+            return operation;
+        }
+
+        [UnityEngine.Scripting.Preserve]
+        public FSLoadPackageManifestOperation LoadLocalPackageManifestAsync(string packageVersion, int timeout)
+        {
+            var operation = new BGFSLoadPackageManifestOperation(this, packageVersion, timeout);
+            OperationSystem.StartOperation(PackageName, operation);
+            return operation;
+        }
+
+        [UnityEngine.Scripting.Preserve]
+        public FSLoadPackageManifestOperation RequestRemotePackageManifestAsync(string packageVersion, int timeout)
+        {
+            var operation = new BGFSLoadPackageManifestOperation(this, packageVersion, timeout);
+            OperationSystem.StartOperation(PackageName, operation);
+            return operation;
+        }
+
+        [UnityEngine.Scripting.Preserve]
+        public FSRequestPackageVersionOperation RequestRemotePackageVersionAsync(bool appendTimeTicks, int timeout)
+        {
+            var operation = new BGFSRequestPackageVersionOperation(this, timeout);
+            OperationSystem.StartOperation(PackageName, operation);
+            return operation;
+        }
+
+        [UnityEngine.Scripting.Preserve]
         public virtual FSLoadPackageManifestOperation LoadPackageManifestAsync(string packageVersion, int timeout)
         {
             var operation = new BGFSLoadPackageManifestOperation(this, packageVersion, timeout);
@@ -129,7 +162,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual FSRequestPackageVersionOperation RequestPackageVersionAsync(bool appendTimeTicks, int timeout)
         {
             var operation = new BGFSRequestPackageVersionOperation(this, timeout);
@@ -137,7 +170,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual FSClearAllBundleFilesOperation ClearAllBundleFilesAsync()
         {
             var operation = new FSClearAllBundleFilesCompleteOperation();
@@ -145,7 +178,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual FSClearUnusedBundleFilesOperation ClearUnusedBundleFilesAsync(PackageManifest manifest)
         {
             var operation = new FSClearUnusedBundleFilesCompleteOperation();
@@ -153,17 +186,17 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual FSDownloadFileOperation DownloadFileAsync(PackageBundle bundle, DownloadParam param)
         {
-            param.MainURL = RemoteServices.GetRemoteMainURL(bundle.FileName);
-            param.FallbackURL = RemoteServices.GetRemoteFallbackURL(bundle.FileName);
+            param.MainURL = RemoteServices.GetRemoteMainURL(bundle.FileName, null);
+            param.FallbackURL = RemoteServices.GetRemoteFallbackURL(bundle.FileName, null);
             var operation = new BGFSDownloadFileOperation(this, bundle, param);
             OperationSystem.StartOperation(PackageName, operation);
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual FSLoadBundleOperation LoadBundleFile(PackageBundle bundle)
         {
             var operation = new BGFSLoadBundleOperation(this, bundle);
@@ -171,17 +204,17 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return operation;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual void UnloadBundleFile(PackageBundle bundle, object result)
         {
-            AssetBundle assetBundle = result as AssetBundle;
+            var assetBundle = result as AssetBundle;
             if (assetBundle != null)
             {
                 assetBundle.Unload(true);
             }
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual void SetParameter(string name, object value)
         {
             if (name == FileSystemParametersDefine.REMOTE_SERVICES)
@@ -194,7 +227,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             }
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual void OnCreate(string packageName, string rootDirectory)
         {
             PackageName = packageName;
@@ -202,32 +235,32 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             // 注意：CDN服务未启用的情况下，使用抖音WEB服务器
             if (RemoteServices == null)
             {
-                string webRoot = PathUtility.Combine(Application.streamingAssetsPath, YooAssetSettingsData.Setting.DefaultYooFolderName, packageName);
+                var webRoot = PathUtility.Combine(Application.streamingAssetsPath, YooAssetSettingsData.Setting.DefaultYooFolderName, packageName);
                 RemoteServices = new WebRemoteServices(webRoot);
             }
 
-            _fileSystemManager = StarkSDK.API.GetStarkFileSystemManager();
+            _fileSystemManager = StarkSDKSpace.StarkSDK.API.GetStarkFileSystemManager();
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual void OnUpdate()
         {
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual bool Belong(PackageBundle bundle)
         {
             return true;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual bool Exists(PackageBundle bundle)
         {
-            string filePath = GetCacheFileLoadPath(bundle);
+            var filePath = GetCacheFileLoadPath(bundle);
             return _fileSystemManager.AccessSync(filePath);
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual bool NeedDownload(PackageBundle bundle)
         {
             if (Belong(bundle) == false)
@@ -238,25 +271,25 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             return Exists(bundle) == false;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual bool NeedUnpack(PackageBundle bundle)
         {
             return false;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual bool NeedImport(PackageBundle bundle)
         {
             return false;
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual byte[] ReadFileData(PackageBundle bundle)
         {
             throw new System.NotImplementedException();
         }
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public virtual string ReadFileText(PackageBundle bundle)
         {
             throw new System.NotImplementedException();
@@ -264,9 +297,10 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
 
         #region 内部方法
 
+        [UnityEngine.Scripting.Preserve]
         private string GetCacheFileLoadPath(PackageBundle bundle)
         {
-            if (_cacheFilePaths.TryGetValue(bundle.BundleGUID, out string filePath) == false)
+            if (_cacheFilePaths.TryGetValue(bundle.BundleGUID, out var filePath) == false)
             {
                 filePath = _fileSystemManager.GetLocalCachedPathForUrl(bundle.FileName);
                 _cacheFilePaths.Add(bundle.BundleGUID, filePath);

@@ -1,11 +1,13 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
     [UnityEngine.Scripting.Preserve]
     internal class RequestByteGamePackageVersionOperation : AsyncOperationBase
     {
+        [UnityEngine.Scripting.Preserve]
         private enum ESteps
         {
             None,
@@ -23,6 +25,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         /// 包裹版本
         /// </summary>
         public string PackageVersion { private set; get; }
+
 
         [UnityEngine.Scripting.Preserve]
         public RequestByteGamePackageVersionOperation(ByteGameFileSystem fileSystem, int timeout)
@@ -46,46 +49,44 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
                 return;
             }
 
-            if (_steps != ESteps.RequestPackageVersion)
+            if (_steps == ESteps.RequestPackageVersion)
             {
-                return;
-            }
-
-            if (_webTextRequestOp == null)
-            {
-                string fileName = YooAssetSettingsData.GetPackageVersionFileName(_fileSystem.PackageName);
-                string url = GetRequestURL(fileName);
-                _webTextRequestOp = new UnityWebTextRequestOperation(url, _timeout);
-                OperationSystem.StartOperation(_fileSystem.PackageName, _webTextRequestOp);
-            }
-
-            Progress = _webTextRequestOp.Progress;
-            if (_webTextRequestOp.IsDone == false)
-            {
-                return;
-            }
-
-            if (_webTextRequestOp.Status == EOperationStatus.Succeed)
-            {
-                PackageVersion = _webTextRequestOp.Result;
-                if (string.IsNullOrEmpty(PackageVersion))
+                if (_webTextRequestOp == null)
                 {
-                    _steps = ESteps.Done;
-                    Status = EOperationStatus.Failed;
-                    Error = $"Wechat package version file content is empty !";
+                    var fileName = YooAssetSettingsData.GetPackageVersionFileName(_fileSystem.PackageName);
+                    var url = GetRequestURL(fileName);
+                    _webTextRequestOp = new UnityWebTextRequestOperation(url, _timeout);
+                    OperationSystem.StartOperation(_fileSystem.PackageName, _webTextRequestOp);
+                }
+
+                Progress = _webTextRequestOp.Progress;
+                if (_webTextRequestOp.IsDone == false)
+                {
+                    return;
+                }
+
+                if (_webTextRequestOp.Status == EOperationStatus.Succeed)
+                {
+                    PackageVersion = _webTextRequestOp.Result;
+                    if (string.IsNullOrEmpty(PackageVersion))
+                    {
+                        _steps = ESteps.Done;
+                        Status = EOperationStatus.Failed;
+                        Error = $"Wechat package version file content is empty !";
+                    }
+                    else
+                    {
+                        _steps = ESteps.Done;
+                        Status = EOperationStatus.Succeed;
+                    }
                 }
                 else
                 {
                     _steps = ESteps.Done;
-                    Status = EOperationStatus.Succeed;
+                    Status = EOperationStatus.Failed;
+                    Error = _webTextRequestOp.Error;
+                    WebRequestCounter.RecordRequestFailed(_fileSystem.PackageName, nameof(RequestByteGamePackageVersionOperation));
                 }
-            }
-            else
-            {
-                _steps = ESteps.Done;
-                Status = EOperationStatus.Failed;
-                Error = _webTextRequestOp.Error;
-                WebRequestCounter.RecordRequestFailed(_fileSystem.PackageName, nameof(RequestByteGamePackageVersionOperation));
             }
         }
 
@@ -95,11 +96,11 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             // 轮流返回请求地址
             if (_requestCount % 2 == 0)
             {
-                return _fileSystem.RemoteServices.GetRemoteMainURL(fileName);
+                return _fileSystem.RemoteServices.GetRemoteMainURL(fileName, PackageVersion);
             }
             else
             {
-                return _fileSystem.RemoteServices.GetRemoteFallbackURL(fileName);
+                return _fileSystem.RemoteServices.GetRemoteFallbackURL(fileName, PackageVersion);
             }
         }
     }

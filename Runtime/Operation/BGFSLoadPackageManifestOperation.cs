@@ -1,11 +1,13 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
     [UnityEngine.Scripting.Preserve]
     internal class BGFSLoadPackageManifestOperation : FSLoadPackageManifestOperation
     {
+        [UnityEngine.Scripting.Preserve]
         private enum ESteps
         {
             None,
@@ -20,6 +22,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         private RequestByteGamePackageHashOperation _requestRemotePackageHashOp;
         private LoadByteGamePackageManifestOperation _loadRemotePackageManifestOp;
         private ESteps _steps = ESteps.None;
+
 
         [UnityEngine.Scripting.Preserve]
         public BGFSLoadPackageManifestOperation(ByteGameFileSystem fileSystem, string packageVersion, int timeout)
@@ -39,7 +42,9 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         public override void InternalOnUpdate()
         {
             if (_steps == ESteps.None || _steps == ESteps.Done)
+            {
                 return;
+            }
 
             if (_steps == ESteps.RequestRemotePackageHash)
             {
@@ -50,7 +55,9 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
                 }
 
                 if (_requestRemotePackageHashOp.IsDone == false)
+                {
                     return;
+                }
 
                 if (_requestRemotePackageHashOp.Status == EOperationStatus.Succeed)
                 {
@@ -68,14 +75,16 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
             {
                 if (_loadRemotePackageManifestOp == null)
                 {
-                    string packageHash = _requestRemotePackageHashOp.PackageHash;
+                    var packageHash = _requestRemotePackageHashOp.PackageHash;
                     _loadRemotePackageManifestOp = new LoadByteGamePackageManifestOperation(_fileSystem, _packageVersion, packageHash, _timeout);
                     OperationSystem.StartOperation(_fileSystem.PackageName, _loadRemotePackageManifestOp);
                 }
 
                 Progress = _loadRemotePackageManifestOp.Progress;
                 if (_loadRemotePackageManifestOp.IsDone == false)
+                {
                     return;
+                }
 
                 if (_loadRemotePackageManifestOp.Status == EOperationStatus.Succeed)
                 {

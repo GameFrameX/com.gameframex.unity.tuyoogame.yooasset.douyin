@@ -1,7 +1,8 @@
-#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME
+#if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
+
 using YooAsset;
 
-namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
+namespace YooAsset.DouYin
 {
     [UnityEngine.Scripting.Preserve]
     internal class LoadByteGamePackageManifestOperation : AsyncOperationBase
@@ -30,6 +31,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         /// </summary>
         public PackageManifest Manifest { private set; get; }
 
+
         [UnityEngine.Scripting.Preserve]
         internal LoadByteGamePackageManifestOperation(ByteGameFileSystem fileSystem, string packageVersion, string packageHash, int timeout)
         {
@@ -50,21 +52,25 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         public override void InternalOnUpdate()
         {
             if (_steps == ESteps.None || _steps == ESteps.Done)
+            {
                 return;
+            }
 
             if (_steps == ESteps.RequestFileData)
             {
                 if (_webDataRequestOp == null)
                 {
-                    string fileName = YooAssetSettingsData.GetManifestBinaryFileName(_fileSystem.PackageName, _packageVersion);
-                    string url = GetRequestURL(fileName);
+                    var fileName = YooAssetSettingsData.GetManifestBinaryFileName(_fileSystem.PackageName, _packageVersion);
+                    var url = GetRequestURL(fileName);
                     _webDataRequestOp = new UnityWebDataRequestOperation(url, _timeout);
                     OperationSystem.StartOperation(_fileSystem.PackageName, _webDataRequestOp);
                 }
 
                 Progress = _webDataRequestOp.Progress;
                 if (_webDataRequestOp.IsDone == false)
+                {
                     return;
+                }
 
                 if (_webDataRequestOp.Status == EOperationStatus.Succeed)
                 {
@@ -81,7 +87,7 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
 
             if (_steps == ESteps.VerifyFileData)
             {
-                string fileHash = HashUtility.BytesMD5(_webDataRequestOp.Result);
+                var fileHash = HashUtility.BytesMD5(_webDataRequestOp.Result);
                 if (fileHash == _packageHash)
                 {
                     _steps = ESteps.LoadManifest;
@@ -104,7 +110,9 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
 
                 Progress = _deserializer.Progress;
                 if (_deserializer.IsDone == false)
+                {
                     return;
+                }
 
                 if (_deserializer.Status == EOperationStatus.Succeed)
                 {
@@ -126,9 +134,13 @@ namespace GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime
         {
             // 轮流返回请求地址
             if (_requestCount % 2 == 0)
-                return _fileSystem.RemoteServices.GetRemoteMainURL(fileName);
+            {
+                return _fileSystem.RemoteServices.GetRemoteMainURL(fileName, _packageVersion);
+            }
             else
-                return _fileSystem.RemoteServices.GetRemoteFallbackURL(fileName);
+            {
+                return _fileSystem.RemoteServices.GetRemoteFallbackURL(fileName, _packageVersion);
+            }
         }
     }
 }

@@ -1,11 +1,13 @@
 {
-  "name": "GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime",
-  "rootNamespace": "GameFrameX.Asset.YooAsset.Minigame.DouYin.Runtime",
+  "name": "YooAsset.DouYin",
+  "rootNamespace": "YooAsset.DouYin",
   "references": [
     "StarkWebGL",
     "TTWebGL",
     "YooAsset.Runtime",
-    "YooAsset"
+    "YooAsset",
+    "GameFrameX.Runtime",
+    "GameFrameX.Asset.Runtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
