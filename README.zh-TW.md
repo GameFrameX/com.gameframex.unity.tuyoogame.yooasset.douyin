@@ -77,6 +77,10 @@ Game Frame X YooAsset DouYin 是面向 Unity WebGL **抖音小遊戲（大陸版
 4. 直接下載倉庫放置到 Unity 專案的 `Packages` 目錄下，會自動載入識別。
 
 
+### 升級說明（1.1.0）
+
+本次為破壞性變更：本包不再依賴 `com.gameframex.unity.asset`。請同時將 `com.gameframex.unity.tuyoogame.yooasset` 升級至 ≥ 3.1.0；若專案同時安裝了 `com.gameframex.unity.asset`，請將其升級至 ≥ 4.1.0。
+
 ### 使用範例
 
 安裝完成後，將 ByteGame 檔案系統參數交給 YooAsset 的 Web 模式初始化器即可：
@@ -92,8 +96,11 @@ createParameters.WebFileSystemParameters = ByteGameFileSystemCreater.CreateByteG
 
 | 包 | 說明 |
 | --- | --- |
-| `com.gameframex.unity.tuyoogame.yooasset` | 2.9.4 | YooAsset 核心執行時與 API。 |
-| `com.gameframex.unity.asset` | 3.1.1 | GameFrameX 資源/執行時整合。 |
+| `com.gameframex.unity.tuyoogame.yooasset` | ≥ 3.1.0 | YooAsset 核心執行時與 API。 |
+
+## 註冊即分發機制
+
+本包的 Registrar 會將自身的 `IWebPlayModeFileSystemProvider`（抖音 Priority 為 0）自註冊到主包的 `WebPlayModeFileSystemProviderRegistry`，安裝即生效、無需任何平台分支。資源抽象層在首次 Web 模式初始化時按 Priority 互斥解析（Priority 最高者優先，同優先級取註冊序首個），一次初始化只會選中一個平台。註冊發生在 `BeforeSceneLoad` 階段，早於首次 Web 初始化，保證 Provider 始終就緒。
 
 ## 文檔與資源
 

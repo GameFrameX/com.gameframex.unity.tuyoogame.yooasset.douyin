@@ -77,6 +77,10 @@ Game Frame X YooAsset DouYin は、Unity WebGL の **抖音ミニゲーム（中
 4. リポジトリを Unity プロジェクトの `Packages` ディレクトリにクローンしてください。自動的に読み込まれます。
 
 
+### アップグレード注意事項（1.1.0）
+
+本バージョンは破壊的変更です：本パッケージは `com.gameframex.unity.asset` に依存しなくなりました。同時に `com.gameframex.unity.tuyoogame.yooasset` を ≥ 3.1.0 にアップグレードしてください。プロジェクトに `com.gameframex.unity.asset` がインストールされている場合は、≥ 4.1.0 にアップグレードしてください。
+
 ### 使用例
 
 インストール後、ByteGame ファイルシステムパラメータを YooAsset の Web プレイモード初期化に渡します：
@@ -92,8 +96,11 @@ createParameters.WebFileSystemParameters = ByteGameFileSystemCreater.CreateByteG
 
 | パッケージ | 説明 |
 | --- | --- |
-| `com.gameframex.unity.tuyoogame.yooasset` | 2.9.4 | YooAsset コアランタイムと API。 |
-| `com.gameframex.unity.asset` | 3.1.1 | GameFrameX アセット/ランタイム統合。 |
+| `com.gameframex.unity.tuyoogame.yooasset` | ≥ 3.1.0 | YooAsset コアランタイムと API。 |
+
+## 登録即ディスパッチ機構
+
+本パッケージの Registrar は、自身の `IWebPlayModeFileSystemProvider`（DouYin の Priority は 0）をメインパッケージの `WebPlayModeFileSystemProviderRegistry` に自己登録するため、インストールするだけでディスパッチが有効になり、プラットフォーム分岐は不要です。アセット抽象レイヤーは最初の Web プレイモード初期化時に Priority で排他的に解決し（Priority が最も高いものが優先、同値の場合は先に登録されたもの）、1 回の初期化で選択されるプラットフォームは 1 つだけです。登録は `BeforeSceneLoad` ステージで行われ、最初の Web 初期化より早く実行されるため、Provider は常に準備完了です。
 
 ## ドキュメントとリソース
 

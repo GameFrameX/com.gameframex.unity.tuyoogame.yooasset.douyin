@@ -62,6 +62,7 @@ namespace YooAsset.DouYin
                 typeof(LoadByteGamePackageManifestOperation),
                 typeof(DouYinConfigHandler),
                 typeof(DouYinWebPlayModeFileSystemProvider),
+                typeof(DouYinWebPlayModeFileSystemProvider.Registrar),
             };
 #endif
         }

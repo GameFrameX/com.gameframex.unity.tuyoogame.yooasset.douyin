@@ -30,8 +30,6 @@
 //  Official Documentation: https://gameframex.doc.alianblank.com/
 // ==========================================================================================
 
-using GameFrameX.Asset.Runtime;
-using GameFrameX.Runtime;
 using UnityEngine;
 using YooAsset;
 
@@ -60,10 +58,10 @@ namespace YooAsset.DouYin
             // https://developer.open-douyin.com/docs/resource/zh-CN/mini-game/develop/guide/performance-optimization-both/unity/startup/use-predownload-feature#ac640a2e
             TTSDK.TT.PreloadConcurrent(10);
             // 强行控制并发数量
-            GameEntry.GetComponent<AssetComponent>().gameObject.GetOrAddComponent<DouYinConfigHandler>();
+            EnsureConfigHandler();
             // 创建字节小游戏文件系统
             // https://www.yooasset.com/docs/MiniGame#%E6%8A%96%E9%9F%B3%E5%B0%8F%E6%B8%B8%E6%88%8F
-            if (context.HostServerURL.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(context.HostServerURL))
             {
                 return ByteGameFileSystemCreater.CreateByteGameFileSystemParameters();
             }
@@ -71,9 +69,28 @@ namespace YooAsset.DouYin
             return ByteGameFileSystemCreater.CreateByteGameFileSystemParameters(context.HostServerURL);
         }
 
+        private static DouYinConfigHandler _configHandler;
+
+        /// <summary>
+        /// 自建隐藏宿主挂载配置组件（不依赖任何 GameFrameX 宿主）
+        /// </summary>
+        private static void EnsureConfigHandler()
+        {
+            if (_configHandler != null)
+            {
+                return;
+            }
+
+            var host = new GameObject("YooAsset.DouYin.ConfigHandler");
+            DontDestroyOnLoad(host);
+            host.hideFlags = HideFlags.HideInHierarchy;
+            _configHandler = host.AddComponent<DouYinConfigHandler>();
+        }
+
         /// <summary>
         /// 运行时自动注册
         /// </summary>
+        [UnityEngine.Scripting.Preserve]
         internal static class Registrar
         {
             [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
