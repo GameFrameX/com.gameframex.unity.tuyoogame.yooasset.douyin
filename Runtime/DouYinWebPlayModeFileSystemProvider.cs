@@ -82,7 +82,7 @@ namespace YooAsset.DouYin
             }
 
             var host = new GameObject("YooAsset.DouYin.ConfigHandler");
-            DontDestroyOnLoad(host);
+            UnityEngine.Object.DontDestroyOnLoad(host);
             host.hideFlags = HideFlags.HideInHierarchy;
             _configHandler = host.AddComponent<DouYinConfigHandler>();
         }
