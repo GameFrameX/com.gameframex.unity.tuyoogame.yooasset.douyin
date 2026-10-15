@@ -1,13 +1,12 @@
 #if UNITY_WEBGL && ENABLE_DOUYIN_MINI_GAME && DOUYINMINIGAME
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 using YooAsset;
 
 namespace YooAsset.DouYin
 {
-    [Preserve]
+    [UnityEngine.Scripting.Preserve]
     public static class ByteGameFileSystemCreater
     {
         [UnityEngine.Scripting.Preserve]
@@ -37,7 +36,7 @@ namespace YooAsset.DouYin
     [UnityEngine.Scripting.Preserve]
     internal class ByteGameFileSystem : IFileSystem
     {
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public sealed class WebRemoteServices : IRemoteServices
         {
             private readonly string _webPackageRoot;
@@ -108,7 +107,7 @@ namespace YooAsset.DouYin
 
         #endregion
 
-        [Preserve]
+        [UnityEngine.Scripting.Preserve]
         public ByteGameFileSystem()
         {
             PackageName = string.Empty;
