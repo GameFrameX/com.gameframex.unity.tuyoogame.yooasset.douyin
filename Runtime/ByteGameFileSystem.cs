@@ -10,21 +10,23 @@ namespace YooAsset.DouYin
     public static class ByteGameFileSystemCreater
     {
         [UnityEngine.Scripting.Preserve]
-        public static FileSystemParameters CreateByteGameFileSystemParameters(IRemoteServices remoteServices = null)
+        public static FileSystemParameters CreateByteGameFileSystemParameters(IRemoteServices remoteServices = null, DouYinFileSystemOption option = null)
         {
             var fileSystemClass = typeof(ByteGameFileSystem).FullName;
             var fileSystemParams = new FileSystemParameters(fileSystemClass, null);
             fileSystemParams.AddParameter(FileSystemParametersDefine.REMOTE_SERVICES, remoteServices);
+            fileSystemParams.AddParameter(DouYinFileSystemOption.ParameterKey, option ?? new DouYinFileSystemOption());
             return fileSystemParams;
         }
 
         [UnityEngine.Scripting.Preserve]
-        public static FileSystemParameters CreateByteGameFileSystemParameters(string buildinPackRoot)
+        public static FileSystemParameters CreateByteGameFileSystemParameters(string buildinPackRoot, DouYinFileSystemOption option = null)
         {
             var fileSystemClass = typeof(ByteGameFileSystem).FullName;
             IRemoteServices remoteServices = new ByteGameFileSystem.WebRemoteServices(buildinPackRoot);
             var fileSystemParams = new FileSystemParameters(fileSystemClass, null);
             fileSystemParams.AddParameter(FileSystemParametersDefine.REMOTE_SERVICES, remoteServices);
+            fileSystemParams.AddParameter(DouYinFileSystemOption.ParameterKey, option ?? new DouYinFileSystemOption());
             return fileSystemParams;
         }
     }
@@ -104,6 +106,11 @@ namespace YooAsset.DouYin
         /// 自定义参数：远程服务接口
         /// </summary>
         public IRemoteServices RemoteServices { private set; get; } = null;
+
+        /// <summary>
+        /// 自定义参数：文件系统选项（直载 bundle 重试参数；未传时保持默认实例，永不为 null）
+        /// </summary>
+        public DouYinFileSystemOption Option { private set; get; } = new DouYinFileSystemOption();
 
         #endregion
 
@@ -219,6 +226,10 @@ namespace YooAsset.DouYin
             if (name == FileSystemParametersDefine.REMOTE_SERVICES)
             {
                 RemoteServices = (IRemoteServices)value;
+            }
+            else if (name == DouYinFileSystemOption.ParameterKey)
+            {
+                Option = (DouYinFileSystemOption)value ?? new DouYinFileSystemOption();
             }
             else
             {
