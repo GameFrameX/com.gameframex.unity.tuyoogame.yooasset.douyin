@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/gameframex/com.gameframex.unity.tuyoogame.yooasset.douyin/compare/2.1.0...2.1.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **tuyoogame.yooasset.douyin:** 添加完整 link.xml 防代码裁剪保护 ([3d6e179](https://github.com/gameframex/com.gameframex.unity.tuyoogame.yooasset.douyin/commit/3d6e179f7fc6a3f4499b178f034de2dd78d9bf0e))
+
 # [2.1.0](https://github.com/gameframex/com.gameframex.unity.tuyoogame.yooasset.douyin/compare/2.0.1...2.1.0) (2026-10-18)
 
 
